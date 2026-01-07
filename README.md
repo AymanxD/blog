@@ -17,28 +17,25 @@ blog/
 ## Prerequisites
 
 - Node.js 18+
-- npm 8+
+- pnpm 8+
 
 ## Getting Started
 
 ### Installation
 
 ```bash
-# Install root dependencies
-npm install
-
-# Install blog app dependencies
-cd apps/blog && npm install
+# Install all dependencies (root and workspace packages)
+pnpm install
 ```
 
 ### Development
 
 ```bash
 # Run the blog in development mode
-npx nx dev blog
+pnpm nx dev blog
 
-# Or directly from the apps/blog directory
-cd apps/blog && npm run dev
+# Or using pnpm filter
+pnpm --filter @blog/blog dev
 ```
 
 The development server will start at `http://localhost:4321`.
@@ -47,17 +44,17 @@ The development server will start at `http://localhost:4321`.
 
 ```bash
 # Build the blog for production
-npx nx build blog
+pnpm nx build blog
 
-# Or directly from the apps/blog directory
-cd apps/blog && npm run build
+# Or using pnpm filter
+pnpm --filter @blog/blog build
 ```
 
 ### Preview Production Build
 
 ```bash
 # Preview the production build
-npx nx preview blog
+pnpm nx preview blog
 ```
 
 ## Configuration
