@@ -1,0 +1,133 @@
+---
+import type { BlogPost } from '../types/blog';
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+
+const formattedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<article class="post-card">
+  {post.coverImage && (
+    <a href={`/posts/${post.slug}`} class="cover-image">
+      <img src={post.coverImage} alt={post.title} />
+    </a>
+  )}
+  <div class="content">
+    <header>
+      <h2>
+        <a href={`/posts/${post.slug}`}>{post.title}</a>
+      </h2>
+      <div class="meta">
+        <span class="author">{post.author.name}</span>
+        <span class="separator">·</span>
+        <time datetime={post.publishedAt}>{formattedDate}</time>
+      </div>
+    </header>
+    <p class="excerpt">{post.excerpt}</p>
+    {post.tags && post.tags.length > 0 && (
+      <div class="tags">
+        {post.tags.map((tag) => (
+          <a href={`/tags/${tag}`} class="tag">{tag}</a>
+        ))}
+      </div>
+    )}
+    <a href={`/posts/${post.slug}`} class="read-more">Read more →</a>
+  </div>
+</article>
+
+<style>
+  .post-card {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .post-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .cover-image {
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  .cover-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+  }
+
+  .post-card:hover .cover-image img {
+    transform: scale(1.05);
+  }
+
+  .content {
+    padding: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  h2 a {
+    color: var(--color-text);
+  }
+
+  h2 a:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .meta {
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    margin-bottom: 1rem;
+  }
+
+  .separator {
+    margin: 0 0.5rem;
+  }
+
+  .excerpt {
+    color: var(--color-text-light);
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .tag {
+    background-color: var(--color-background-alt);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+  }
+
+  .tag:hover {
+    background-color: var(--color-primary);
+    color: white;
+    text-decoration: none;
+  }
+
+  .read-more {
+    font-weight: 500;
+  }
+</style>

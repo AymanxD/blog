@@ -1,0 +1,252 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { fetchBlogPostBySlug } from '../../services/blogApi';
+import type { BlogPost } from '../../types/blog';
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/posts');
+}
+
+let post: BlogPost | null = null;
+let error: string | null = null;
+
+try {
+  const response = await fetchBlogPostBySlug(slug);
+  post = response.post;
+} catch (e) {
+  error = e instanceof Error ? e.message : 'Failed to load post';
+}
+
+const formattedDate = post ? new Date(post.publishedAt).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+}) : '';
+
+const updatedDate = post?.updatedAt ? new Date(post.updatedAt).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+}) : null;
+---
+
+<BaseLayout title={post ? `${post.title} - Blog` : 'Post Not Found - Blog'}>
+  {error ? (
+    <div class="error-page">
+      <h1>Unable to Load Post</h1>
+      <p>{error}</p>
+      <a href="/posts">← Back to all posts</a>
+    </div>
+  ) : post ? (
+    <article class="post">
+      <header class="post-header">
+        <a href="/posts" class="back-link">← Back to all posts</a>
+        
+        {post.coverImage && (
+          <img src={post.coverImage} alt={post.title} class="cover-image" />
+        )}
+        
+        <h1>{post.title}</h1>
+        
+        <div class="meta">
+          <div class="author">
+            {post.author.avatar && (
+              <img src={post.author.avatar} alt={post.author.name} class="avatar" />
+            )}
+            <span>{post.author.name}</span>
+          </div>
+          <div class="dates">
+            <time datetime={post.publishedAt}>Published: {formattedDate}</time>
+            {updatedDate && (
+              <time datetime={post.updatedAt}>Updated: {updatedDate}</time>
+            )}
+          </div>
+        </div>
+        
+        {post.tags && post.tags.length > 0 && (
+          <div class="tags">
+            {post.tags.map((tag) => (
+              <a href={`/tags/${tag}`} class="tag">{tag}</a>
+            ))}
+          </div>
+        )}
+      </header>
+      
+      <div class="post-content" set:html={post.content} />
+      
+      <footer class="post-footer">
+        <a href="/posts" class="back-link">← Back to all posts</a>
+      </footer>
+    </article>
+  ) : (
+    <div class="error-page">
+      <h1>Post Not Found</h1>
+      <p>The post you're looking for doesn't exist.</p>
+      <a href="/posts">← Back to all posts</a>
+    </div>
+  )}
+</BaseLayout>
+
+<style>
+  .error-page {
+    text-align: center;
+    padding: 4rem 0;
+  }
+
+  .error-page h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #991b1b;
+  }
+
+  .error-page p {
+    color: var(--color-text-light);
+    margin-bottom: 2rem;
+  }
+
+  .post {
+    max-width: var(--content-width);
+    margin: 0 auto;
+  }
+
+  .post-header {
+    margin-bottom: 3rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    color: var(--color-text-light);
+  }
+
+  .back-link:hover {
+    color: var(--color-primary);
+  }
+
+  .cover-image {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .post-header h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-light);
+  }
+
+  .author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .dates {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    background-color: var(--color-background-alt);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+  }
+
+  .tag:hover {
+    background-color: var(--color-primary);
+    color: white;
+    text-decoration: none;
+  }
+
+  .post-content {
+    line-height: 1.8;
+    font-size: 1.125rem;
+  }
+
+  .post-content :global(h2) {
+    font-size: 1.75rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .post-content :global(h3) {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .post-content :global(p) {
+    margin-bottom: 1.5rem;
+  }
+
+  .post-content :global(ul),
+  .post-content :global(ol) {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  .post-content :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .post-content :global(blockquote) {
+    border-left: 4px solid var(--color-primary);
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--color-text-light);
+  }
+
+  .post-content :global(pre) {
+    background-color: #1f2937;
+    color: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-content :global(code) {
+    font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+    font-size: 0.875em;
+  }
+
+  .post-content :global(img) {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 2rem 0;
+  }
+
+  .post-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+</style>
